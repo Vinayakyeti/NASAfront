@@ -15,6 +15,10 @@ export default function Home() {
   const [sheetHeight, setSheetHeight] = useState("30%");
   const [weatherLayer, setWeatherLayer] = useState(null); // 'rainfall', 'wind', 'heat', 'cold'
   const [showLayerMenu, setShowLayerMenu] = useState(false);
+  const [selectedMonth, setSelectedMonth] = useState("");
+  const [selectedDay, setSelectedDay] = useState("");
+  const [selectedYear, setSelectedYear] = useState("");
+  const [selectedTime, setSelectedTime] = useState("");
   const mapContainer = useRef(null);
   const mapRef = useRef(null);
   const markersArrayRef = useRef([]);
@@ -44,51 +48,120 @@ export default function Home() {
 
       map.on("click", async (e) => {
         const { lng, lat } = e.lngLat;
+        console.log(`📍 Pin placed - Latitude: ${lat}, Longitude: ${lng}`);
         
         try {
-          const res = await fetch(
-            `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&appid=${apiKey}&units=metric`
-          );
-          const data = await res.json();
-          
-          // Set current weather with additional data
-          const weatherData = {
-            temp: data.main.temp,
-            feels_like: data.main.feels_like,
-            humidity: data.main.humidity,
-            wind: data.wind.speed,
-            description: data.weather[0].description,
-            icon: data.weather[0].icon,
-            location: data.name || 'Unknown Location',
-            lat: lat,
-            lng: lng,
-            rain: data.rain ? (data.rain['1h'] || data.rain['3h'] || 0) : 0,
-            clouds: data.clouds?.all || 0,
-            visibility: data.visibility || 0
-          };
-          
-          setCurrentWeather(weatherData);
-          
-          // Add marker with iOS-style pin
-          const temperature = data.main.temp;
-          const pinColor = getTempColor(temperature);
-          
-          const customPin = document.createElement("div");
-          customPin.className = "ios-map-pin";
-          customPin.innerHTML = `
-            <div class="ios-pin-dot" style="background: ${pinColor.start};"></div>
-            <div class="ios-pin-temp">${Math.round(temperature)}°</div>
-          `;
-          
-          const marker = new maptilersdk.Marker({ 
-            element: customPin,
-            anchor: 'center'
-          })
-            .setLngLat([lng, lat])
-            .addTo(map);
+          // If date and time are selected, use forecast API
+          if (selectedMonth && selectedDay && selectedYear && selectedTime) {
+            const forecastDate = `${selectedYear}-${selectedMonth.padStart(2, '0')}-${selectedDay.padStart(2, '0')}`;
+            const targetDateTime = new Date(`${forecastDate}T${selectedTime}`);
+            const currentTime = new Date();
+            
+            if (targetDateTime < currentTime) {
+              alert("Cannot fetch forecast for past dates");
+              return;
+            }
 
-          markersArrayRef.current.push(marker);
-          setMarkers(prev => [...prev, { lng, lat, temp: temperature, location: data.name }]);
+            const forecastRes = await fetch(
+              `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lng}&appid=${apiKey}&units=metric`
+            );
+            const forecastData = await forecastRes.json();
+            
+            // Find closest forecast entry
+            const targetTimestamp = targetDateTime.getTime();
+            let closestForecast = forecastData.list[0];
+            let smallestDiff = Math.abs(new Date(closestForecast.dt * 1000).getTime() - targetTimestamp);
+
+            forecastData.list.forEach(item => {
+              const itemTimestamp = new Date(item.dt * 1000).getTime();
+              const diff = Math.abs(itemTimestamp - targetTimestamp);
+              if (diff < smallestDiff) {
+                smallestDiff = diff;
+                closestForecast = item;
+              }
+            });
+
+            const weatherData = {
+              temp: closestForecast.main.temp,
+              feels_like: closestForecast.main.feels_like,
+              humidity: closestForecast.main.humidity,
+              wind: closestForecast.wind.speed,
+              description: closestForecast.weather[0].description,
+              icon: closestForecast.weather[0].icon,
+              location: forecastData.city.name || 'Unknown Location',
+              lat: lat,
+              lng: lng,
+              rain: closestForecast.rain ? (closestForecast.rain['3h'] || 0) : 0,
+              clouds: closestForecast.clouds?.all || 0,
+              visibility: closestForecast.visibility || 0,
+              forecastTime: new Date(closestForecast.dt * 1000).toLocaleString()
+            };
+            
+            setCurrentWeather(weatherData);
+            
+            const temperature = closestForecast.main.temp;
+            const pinColor = getTempColor(temperature);
+            
+            const customPin = document.createElement("div");
+            customPin.className = "ios-map-pin";
+            customPin.innerHTML = `
+              <div class="ios-pin-dot" style="background: ${pinColor.start};"></div>
+              <div class="ios-pin-temp">${Math.round(temperature)}°</div>
+            `;
+            
+            const marker = new maptilersdk.Marker({ 
+              element: customPin,
+              anchor: 'center'
+            })
+              .setLngLat([lng, lat])
+              .addTo(map);
+
+            markersArrayRef.current.push(marker);
+            setMarkers(prev => [...prev, { lng, lat, temp: temperature, location: forecastData.city.name }]);
+          } else {
+            // Use current weather API
+            const res = await fetch(
+              `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&appid=${apiKey}&units=metric`
+            );
+            const data = await res.json();
+            
+            const weatherData = {
+              temp: data.main.temp,
+              feels_like: data.main.feels_like,
+              humidity: data.main.humidity,
+              wind: data.wind.speed,
+              description: data.weather[0].description,
+              icon: data.weather[0].icon,
+              location: data.name || 'Unknown Location',
+              lat: lat,
+              lng: lng,
+              rain: data.rain ? (data.rain['1h'] || data.rain['3h'] || 0) : 0,
+              clouds: data.clouds?.all || 0,
+              visibility: data.visibility || 0
+            };
+            
+            setCurrentWeather(weatherData);
+            
+            const temperature = data.main.temp;
+            const pinColor = getTempColor(temperature);
+            
+            const customPin = document.createElement("div");
+            customPin.className = "ios-map-pin";
+            customPin.innerHTML = `
+              <div class="ios-pin-dot" style="background: ${pinColor.start};"></div>
+              <div class="ios-pin-temp">${Math.round(temperature)}°</div>
+            `;
+            
+            const marker = new maptilersdk.Marker({ 
+              element: customPin,
+              anchor: 'center'
+            })
+              .setLngLat([lng, lat])
+              .addTo(map);
+
+            markersArrayRef.current.push(marker);
+            setMarkers(prev => [...prev, { lng, lat, temp: temperature, location: data.name }]);
+          }
         } catch (err) {
           console.error('Failed to fetch temperature:', err);
         }
@@ -138,46 +211,114 @@ export default function Home() {
 
           map.on("click", async (e) => {
             const { lng, lat } = e.lngLat;
+            console.log(`📍 Pin placed - Latitude: ${lat}, Longitude: ${lng}`);
             
             try {
-              const res = await fetch(
-                `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&appid=${apiKey}&units=metric`
-              );
-              const data = await res.json();
-              
-              const weatherData = {
-                temp: data.main.temp,
-                feels_like: data.main.feels_like,
-                humidity: data.main.humidity,
-                wind: data.wind.speed,
-                description: data.weather[0].description,
-                icon: data.weather[0].icon,
-                location: data.name,
-                lat: lat,
-                lng: lng
-              };
-              
-              setCurrentWeather(weatherData);
-              
-              const temperature = data.main.temp;
-              const pinColor = getTempColor(temperature);
-              
-              const customPin = document.createElement("div");
-              customPin.className = "ios-map-pin";
-              customPin.innerHTML = `
-                <div class="ios-pin-dot" style="background: ${pinColor.start};"></div>
-                <div class="ios-pin-temp">${Math.round(temperature)}°</div>
-              `;
-              
-              const marker = new maptilersdk.Marker({ 
-                element: customPin,
-                anchor: 'center'
-              })
-                .setLngLat([lng, lat])
-                .addTo(map);
+              if (selectedMonth && selectedDay && selectedYear && selectedTime) {
+                const forecastDate = `${selectedYear}-${selectedMonth.padStart(2, '0')}-${selectedDay.padStart(2, '0')}`;
+                const targetDateTime = new Date(`${forecastDate}T${selectedTime}`);
+                const currentTime = new Date();
+                
+                if (targetDateTime < currentTime) {
+                  alert("Cannot fetch forecast for past dates");
+                  return;
+                }
 
-              markersArrayRef.current.push(marker);
-              setMarkers(prev => [...prev, { lng, lat, temp: temperature, location: data.name }]);
+                const forecastRes = await fetch(
+                  `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lng}&appid=${apiKey}&units=metric`
+                );
+                const forecastData = await forecastRes.json();
+                
+                const targetTimestamp = targetDateTime.getTime();
+                let closestForecast = forecastData.list[0];
+                let smallestDiff = Math.abs(new Date(closestForecast.dt * 1000).getTime() - targetTimestamp);
+
+                forecastData.list.forEach(item => {
+                  const itemTimestamp = new Date(item.dt * 1000).getTime();
+                  const diff = Math.abs(itemTimestamp - targetTimestamp);
+                  if (diff < smallestDiff) {
+                    smallestDiff = diff;
+                    closestForecast = item;
+                  }
+                });
+
+                const weatherData = {
+                  temp: closestForecast.main.temp,
+                  feels_like: closestForecast.main.feels_like,
+                  humidity: closestForecast.main.humidity,
+                  wind: closestForecast.wind.speed,
+                  description: closestForecast.weather[0].description,
+                  icon: closestForecast.weather[0].icon,
+                  location: forecastData.city.name || 'Unknown Location',
+                  lat: lat,
+                  lng: lng,
+                  rain: closestForecast.rain ? (closestForecast.rain['3h'] || 0) : 0,
+                  clouds: closestForecast.clouds?.all || 0,
+                  visibility: closestForecast.visibility || 0,
+                  forecastTime: new Date(closestForecast.dt * 1000).toLocaleString()
+                };
+                
+                setCurrentWeather(weatherData);
+                
+                const temperature = closestForecast.main.temp;
+                const pinColor = getTempColor(temperature);
+                
+                const customPin = document.createElement("div");
+                customPin.className = "ios-map-pin";
+                customPin.innerHTML = `
+                  <div class="ios-pin-dot" style="background: ${pinColor.start};"></div>
+                  <div class="ios-pin-temp">${Math.round(temperature)}°</div>
+                `;
+                
+                const marker = new maptilersdk.Marker({ 
+                  element: customPin,
+                  anchor: 'center'
+                })
+                  .setLngLat([lng, lat])
+                  .addTo(map);
+
+                markersArrayRef.current.push(marker);
+                setMarkers(prev => [...prev, { lng, lat, temp: temperature, location: forecastData.city.name }]);
+              } else {
+                const res = await fetch(
+                  `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&appid=${apiKey}&units=metric`
+                );
+                const data = await res.json();
+                
+                const weatherData = {
+                  temp: data.main.temp,
+                  feels_like: data.main.feels_like,
+                  humidity: data.main.humidity,
+                  wind: data.wind.speed,
+                  description: data.weather[0].description,
+                  icon: data.weather[0].icon,
+                  location: data.name,
+                  lat: lat,
+                  lng: lng
+                };
+                
+                setCurrentWeather(weatherData);
+                
+                const temperature = data.main.temp;
+                const pinColor = getTempColor(temperature);
+                
+                const customPin = document.createElement("div");
+                customPin.className = "ios-map-pin";
+                customPin.innerHTML = `
+                  <div class="ios-pin-dot" style="background: ${pinColor.start};"></div>
+                  <div class="ios-pin-temp">${Math.round(temperature)}°</div>
+                `;
+                
+                const marker = new maptilersdk.Marker({ 
+                  element: customPin,
+                  anchor: 'center'
+                })
+                  .setLngLat([lng, lat])
+                  .addTo(map);
+
+                markersArrayRef.current.push(marker);
+                setMarkers(prev => [...prev, { lng, lat, temp: temperature, location: data.name }]);
+              }
             } catch (err) {
               console.error('Failed to fetch temperature:', err);
             }
@@ -561,6 +702,106 @@ export default function Home() {
                 </div>
               </div>
             )}
+
+            {/* Date/Time Forecast Selector */}
+            <div className="map-datetime-selector">
+              <div className="datetime-selector-header">
+                📅 Forecast Mode
+              </div>
+              <div className="datetime-selectors">
+                <select 
+                  className="datetime-select" 
+                  value={selectedMonth} 
+                  onChange={(e) => setSelectedMonth(e.target.value)}
+                  title="Select month for forecast"
+                >
+                  <option value="">Month</option>
+                  <option value="1">January</option>
+                  <option value="2">February</option>
+                  <option value="3">March</option>
+                  <option value="4">April</option>
+                  <option value="5">May</option>
+                  <option value="6">June</option>
+                  <option value="7">July</option>
+                  <option value="8">August</option>
+                  <option value="9">September</option>
+                  <option value="10">October</option>
+                  <option value="11">November</option>
+                  <option value="12">December</option>
+                </select>
+                
+                <select 
+                  className="datetime-select" 
+                  value={selectedDay} 
+                  onChange={(e) => setSelectedDay(e.target.value)}
+                  title="Select day for forecast"
+                >
+                  <option value="">Day</option>
+                  {[...Array(31)].map((_, i) => (
+                    <option key={i + 1} value={i + 1}>{i + 1}</option>
+                  ))}
+                </select>
+                
+                <select 
+                  className="datetime-select" 
+                  value={selectedYear} 
+                  onChange={(e) => setSelectedYear(e.target.value)}
+                  title="Select year for forecast"
+                >
+                  <option value="">Year</option>
+                  <option value="2025">2025</option>
+                  <option value="2026">2026</option>
+                </select>
+                
+                <input
+                  type="time"
+                  className="datetime-time-input"
+                  value={selectedTime}
+                  onChange={(e) => setSelectedTime(e.target.value)}
+                  title="Select time for forecast"
+                />
+              </div>
+              
+              {/* See Forecast Button */}
+              <button 
+                className="forecast-btn"
+                disabled={!selectedMonth || !selectedDay || !selectedYear || !selectedTime}
+                onClick={() => {
+                  if (selectedMonth && selectedDay && selectedYear && selectedTime) {
+                    alert('Click on the map to see forecast for the selected date and time');
+                  }
+                }}
+                title="Click map after selecting date/time to see forecast"
+              >
+                {selectedMonth && selectedDay && selectedYear && selectedTime ? '✓ Ready - Click Map for Forecast' : '📅 Select Date & Time'}
+              </button>
+              
+              {/* Status Message */}
+              {selectedMonth && selectedDay && selectedYear && selectedTime ? (
+                <div className="datetime-status active">
+                  ✓ Forecast: {new Date(2025, parseInt(selectedMonth) - 1).toLocaleString('default', { month: 'short' })} {selectedDay}, {selectedYear} at {selectedTime}
+                </div>
+              ) : (
+                <div className="datetime-status">
+                  ⏱️ Click map for current weather
+                </div>
+              )}
+              
+              {(selectedMonth || selectedDay || selectedYear || selectedTime) && (
+                <button 
+                  className="clear-datetime-btn"
+                  onClick={() => {
+                    setSelectedMonth("");
+                    setSelectedDay("");
+                    setSelectedYear("");
+                    setSelectedTime("");
+                  }}
+                  title="Clear forecast selection"
+                >
+                  ✕ Clear
+                </button>
+              )}
+            </div>
 
             {/* Clear History Button */}
             {markers.length > 0 && (

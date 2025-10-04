@@ -1640,3 +1640,294 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* DateTime Inputs Styling */
+.datetime-inputs-row {
+  display: flex;
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.datetime-input-group {
+  flex: 1;
+}
+
+.ios-datetime-input {
+  width: 100%;
+  padding: 14px 18px;
+  border: 2px solid rgba(142, 142, 147, 0.2);
+  border-radius: 12px;
+  font-size: 16px;
+  outline: none;
+  transition: all 0.3s ease;
+  background: white;
+  color: #000;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.ios-datetime-input:focus {
+  border-color: #007AFF;
+  box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
+}
+
+.ios-datetime-input:disabled {
+  background: rgba(142, 142, 147, 0.1);
+  cursor: not-allowed;
+}
+
+.datetime-hint {
+  font-size: 13px;
+  color: #8E8E93;
+  margin: 8px 0 0 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.datetime-hint.active-forecast {
+  color: #007AFF;
+  font-weight: 500;
+  background: rgba(0, 122, 255, 0.1);
+  padding: 10px 14px;
+  border-radius: 10px;
+  justify-content: center;
+}
+
+/* Compact DateTime for Area Component */
+.datetime-inputs-compact {
+  display: flex;
+  gap: 6px;
+  margin: 10px 0;
+}
+
+.ios-datetime-input-small {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1.5px solid rgba(142, 142, 147, 0.3);
+  border-radius: 8px;
+  font-size: 12px;
+  outline: none;
+  transition: all 0.2s ease;
+  background: white;
+  color: #000;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.ios-datetime-input-small:focus {
+  border-color: #007AFF;
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+}
+
+.datetime-hint-small {
+  font-size: 11px;
+  color: #8E8E93;
+  margin: 4px 0 0 0;
+  text-align: center;
+}
+
+/* Map DateTime Selector */
+.map-datetime-selector {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(40px) saturate(180%);
+  border-radius: 14px;
+  padding: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  max-width: 280px;
+  width: 280px;
+}
+
+.datetime-selector-header {
+  font-size: 11px;
+  font-weight: 600;
+  color: #000;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.datetime-selector-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.datetime-status {
+  font-size: 10px;
+  color: #8E8E93;
+  margin: 6px 0;
+  padding: 5px 6px;
+  background: rgba(142, 142, 147, 0.1);
+  border-radius: 6px;
+  text-align: center;
+  line-height: 1.3;
+}
+
+.datetime-status.active {
+  color: #007AFF;
+  background: rgba(0, 122, 255, 0.1);
+  font-weight: 500;
+}
+
+.map-datetime-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid rgba(142, 142, 147, 0.2);
+  border-radius: 10px;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.2s ease;
+  background: white;
+  color: #000;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+}
+
+.map-datetime-input:focus {
+  border-color: #007AFF;
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+}
+
+.clear-datetime-btn {
+  width: 100%;
+  margin-top: 6px;
+  padding: 6px;
+  background: rgba(255, 59, 48, 0.1);
+  border: none;
+  border-radius: 8px;
+  color: #FF3B30;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clear-datetime-btn:hover {
+  background: rgba(255, 59, 48, 0.2);
+}
+
+.clear-datetime-btn:active {
+  transform: scale(0.95);
+}
+
+/* DateTime Selectors (Dropdowns) */
+.datetime-section {
+  margin: 20px 0;
+}
+
+.datetime-selectors {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1.2fr;
+  gap: 8px;
+}
+
+.datetime-select {
+  padding: 10px 8px;
+  border: 2px solid rgba(142, 142, 147, 0.2);
+  border-radius: 10px;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.3s ease;
+  background: white;
+  color: #000;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  cursor: pointer;
+}
+
+.datetime-select:focus {
+  border-color: #007AFF;
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+}
+
+.datetime-select:disabled {
+  background: rgba(142, 142, 147, 0.1);
+  cursor: not-allowed;
+}
+
+.datetime-time-input {
+  padding: 10px 8px;
+  border: 2px solid rgba(142, 142, 147, 0.2);
+  border-radius: 10px;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.3s ease;
+  background: white;
+  color: #000;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  cursor: pointer;
+  width: 100%;
+}
+
+.datetime-time-input:focus {
+  border-color: #007AFF;
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+}
+
+.datetime-time-input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  filter: brightness(0) saturate(100%) invert(35%) sepia(96%) saturate(2866%) hue-rotate(201deg) brightness(99%) contrast(104%);
+}
+
+.forecast-btn {
+  margin-top: 8px;
+  padding: 8px 14px;
+  background: linear-gradient(135deg, #007AFF 0%, #0051D5 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+}
+
+.forecast-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 122, 255, 0.4);
+}
+
+.forecast-btn:active {
+  transform: translateY(0);
+}
+
+.forecast-btn:disabled {
+  background: #E5E5EA;
+  color: #8E8E93;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+@media (max-width: 768px) {
+  .datetime-selectors {
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  
+  .map-datetime-selector {
+    bottom: 10px;
+    left: 10px;
+    max-width: 240px;
+    width: 240px;
+    padding: 8px;
+  }
+  
+  .datetime-selector-header {
+    font-size: 10px;
+    margin-bottom: 6px;
+  }
+  
+  .datetime-select,
+  .datetime-time-input {
+    padding: 8px 6px;
+    font-size: 12px;
+  }
+  
+  .forecast-btn {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+}
